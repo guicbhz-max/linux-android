@@ -1,10 +1,10 @@
 # Linux on Android — Repurpose Your Old Phone
 
-[![shellcheck](https://github.com/mayukh4/linux-android/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/mayukh4/linux-android/actions/workflows/shellcheck.yml)
+[![shellcheck](https://github.com/guicbhz-max/linux-android/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/guicbhz-max/linux-android/actions/workflows/shellcheck.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform: Android](https://img.shields.io/badge/platform-Android%207%2B-3ddc84.svg)](https://termux.dev)
 [![Termux](https://img.shields.io/badge/Termux-F--Droid-000000.svg)](https://f-droid.org/en/packages/com.termux/)
-[![Stars](https://img.shields.io/github/stars/mayukh4/linux-android?style=flat)](https://github.com/mayukh4/linux-android/stargazers)
+[![Stars](https://img.shields.io/github/stars/guicbhz-max/linux-android?style=flat)](https://github.com/guicbhz-max/linux-android/stargazers)
 [![listed on unshittify.dev](https://unshittify.dev/badge.svg)](https://unshittify.dev/p/linux-android/)
 
 Turn any old Android phone or tablet into a **Linux desktop** or a **smart home server** — no PC, no root, no cloud. Just [Termux](https://termux.dev).
@@ -16,7 +16,7 @@ One script installs a **GPU-accelerated desktop** (XFCE4, LXQt, MATE or KDE Plas
 In [Termux from F-Droid](https://f-droid.org/en/packages/com.termux/), with the [Termux-X11 app](https://github.com/termux/termux-x11/releases) installed:
 
 ```bash
-pkg upgrade -y && curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/termux-linux-setup.sh | bash
+pkg upgrade -y && curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/termux-linux-setup.sh | bash
 ```
 
 Then `bash ~/start-linux.sh` and open Termux-X11. Home Assistant instead? Swap in `setup-homeassistant.sh`. Full walkthrough [below](#installation).
@@ -102,7 +102,7 @@ The `termux-wake-lock` command keeps Termux alive when your screen turns off —
 ### Step 3 — Run the script
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/termux-linux-setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/termux-linux-setup.sh | bash
 ```
 
 The script will ask you to choose a desktop environment and whether you want Wine. Everything else is automatic.
@@ -110,7 +110,7 @@ The script will ask you to choose a desktop environment and whether you want Win
 Prefer to read it before running it? Download first:
 
 ```bash
-curl -O https://raw.githubusercontent.com/mayukh4/linux-android/main/termux-linux-setup.sh
+curl -O https://raw.githubusercontent.com/guicbhz-max/linux-android/main/termux-linux-setup.sh
 less termux-linux-setup.sh
 bash termux-linux-setup.sh
 ```
@@ -123,7 +123,7 @@ Installation takes **10–30 minutes** depending on your internet speed. Each pa
 Pass choices as flags, and `-y` to accept defaults for anything not given:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/termux-linux-setup.sh | bash -s -- --de kde --no-wine -y
+curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/termux-linux-setup.sh | bash -s -- --de kde --no-wine -y
 ```
 
 | Flag | Meaning |
@@ -308,7 +308,7 @@ Home Assistant Core runs inside a lightweight Ubuntu container (via proot-distro
 ### Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/setup-homeassistant.sh | bash
+curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/setup-homeassistant.sh | bash
 ```
 
 Unattended: `... | bash -s -- --hacs -y`. Run `bash setup-homeassistant.sh --help` for all options.

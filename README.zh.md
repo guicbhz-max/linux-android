@@ -89,7 +89,7 @@ pkg upgrade -y
 ### 步骤 3 — 运行脚本
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/termux-linux-setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/termux-linux-setup.sh | bash
 ```
 
 脚本会询问你选择哪个桌面环境以及是否安装 Wine，其余全部自动完成。想先阅读脚本再运行，可以用 `curl -O` 下载后执行 `bash termux-linux-setup.sh`。
@@ -99,7 +99,7 @@ curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/termux-l
 **无人值守安装**（不提问）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/termux-linux-setup.sh | bash -s -- --de kde --no-wine -y
+curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/termux-linux-setup.sh | bash -s -- --de kde --no-wine -y
 ```
 
 `--de` 可选 `xfce`（默认）、`lxqt`、`mate`、`kde`；`--wine` / `--no-wine`；`-y` 表示全部使用默认值；`--help` 查看全部选项。
@@ -263,7 +263,7 @@ Home Assistant Core 运行在手机上的轻量级 Ubuntu 容器中（通过 pro
 ### 安装
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/setup-homeassistant.sh | bash
+curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/setup-homeassistant.sh | bash
 ```
 
 无人值守：`... | bash -s -- --hacs -y`。运行 `bash setup-homeassistant.sh --help` 查看全部选项。

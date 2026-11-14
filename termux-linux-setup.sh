@@ -72,10 +72,10 @@ Options:
   -h, --help    Show this help
 
 One-line install:
-  curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/termux-linux-setup.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/termux-linux-setup.sh | bash
 
 One-line, unattended, KDE without Wine:
-  curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/termux-linux-setup.sh | bash -s -- --de kde --no-wine -y
+  curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/termux-linux-setup.sh | bash -s -- --de kde --no-wine -y
 
 Re-running is safe: installed packages are skipped and the launchers are
 regenerated. Install log: ~/termux-setup.log

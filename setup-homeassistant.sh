@@ -58,7 +58,7 @@ Options:
   -h, --help    Show this help
 
 One-line install:
-  curl -fsSL https://raw.githubusercontent.com/mayukh4/linux-android/main/setup-homeassistant.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/setup-homeassistant.sh | bash
 
 Re-running is safe: finished steps are skipped. Install log: ~/termux-setup.log
 USAGE
