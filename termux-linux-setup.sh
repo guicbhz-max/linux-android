@@ -951,9 +951,32 @@ fi
 export PULSE_SERVER=127.0.0.1
 
 echo "[*] Starting Termux-X11 display server..."
+# A server that was killed (or crashed) leaves .X0-lock and the X0 socket
+# behind. Termux-X11 then refuses to start -- "X server already running on
+# display :0" -- while clients get "xrdb: Connection refused". Clear the
+# stale state before launching, exactly like the D-Bus socket above.
+X_TMP="\${TMPDIR:-${TERMUX_PREFIX}/tmp}"
+rm -f "\$X_TMP/.X0-lock" "\$X_TMP/.X11-unix/X0" \
+      "/tmp/.X0-lock" "/tmp/.X11-unix/X0" 2>/dev/null || true
+mkdir -p "\$X_TMP/.X11-unix" 2>/dev/null || true
 termux-x11 :0 -ac &
-sleep 3
+X11_PID=\$!
+# Wait for the socket instead of blindly sleeping: on slower devices 3s is
+# often not enough, and the desktop then fails with "Cannot open display".
+i=0
+while [ ! -S "\$X_TMP/.X11-unix/X0" ] && [ "\$i" -lt 50 ]; do
+    kill -0 "\$X11_PID" 2>/dev/null || break
+    sleep 0.1
+    i=\$((i + 1))
+done
 export DISPLAY=:0
+if command -v xdpyinfo >/dev/null 2>&1; then
+    if ! xdpyinfo >/dev/null 2>&1; then
+        echo "[!] X server not reachable on :0 — close the Termux-X11 app fully and retry."
+    fi
+elif [ ! -S "\$X_TMP/.X11-unix/X0" ]; then
+    echo "[!] Termux-X11 did not start on :0 — close the Termux-X11 app fully and retry."
+fi
 
 # Daemons the bus starts on demand (xfconfd, xfsettingsd, ...) inherit the
 # bus's environment, not this shell's -- so push DISPLAY across explicitly.
@@ -979,6 +1002,9 @@ ${KILL_CMD} || true
 pkill -9 -f "dbus-daemon" 2>/dev/null || true
 # Leave no dead socket for the next start to trip over.
 rm -f "${TERMUX_PREFIX}/var/run/dbus/session_bus_socket" 2>/dev/null || true
+rm -f "\${TMPDIR:-${TERMUX_PREFIX}/tmp}/.X0-lock" \
+      "\${TMPDIR:-${TERMUX_PREFIX}/tmp}/.X11-unix/X0" \
+      "/tmp/.X0-lock" "/tmp/.X11-unix/X0" 2>/dev/null || true
 rm -rf "\$HOME/.dbus" 2>/dev/null || true
 echo "[✔] Desktop stopped."
 STOPEOF
