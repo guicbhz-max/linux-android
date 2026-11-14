@@ -9,7 +9,7 @@
 
 Turn any old Android phone or tablet into a **Linux desktop** or a **smart home server** — no PC, no root, no cloud. Just [Termux](https://termux.dev).
 
-One script installs a **GPU-accelerated desktop** (XFCE4, LXQt, MATE or KDE Plasma) using native Termux packages and Termux-X11 — with Turnip/Zink hardware acceleration on Snapdragon, Firefox, VLC, Python, SSH, and optional Wine for Windows apps. A second script turns the phone into an always-on **Home Assistant** server with HACS.
+One script installs a **GPU-accelerated desktop** (XFCE4, LXQt, MATE or KDE Plasma) using native Termux packages and Termux-X11 — with Turnip/Zink hardware acceleration on Snapdragon, Firefox, VLC, Python, SSH, and optional Wine for Windows apps. A second script turns the phone into an always-on **Home Assistant** server. Home Assistant 2026.11+ includes the built-in **Marketplace** for community integrations, dashboards, themes and templates.
 
 ### Quick start
 
@@ -133,7 +133,7 @@ curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/term
 | `-y`, `--yes` | Don't ask anything |
 | `-h`, `--help` | Show all options |
 
-`setup-homeassistant.sh` takes `--hacs` / `--no-hacs` and `-y` the same way.
+`setup-homeassistant.sh` takes `-y` the same way. HACS is no longer installed — Home Assistant 2026.11+ ships the built-in Marketplace instead.
 </details>
 
 ### Step 4 — Start your desktop
@@ -311,7 +311,7 @@ Home Assistant Core runs inside a lightweight Ubuntu container (via proot-distro
 curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/setup-homeassistant.sh | bash
 ```
 
-Unattended: `... | bash -s -- --hacs -y`. Run `bash setup-homeassistant.sh --help` for all options.
+Unattended: `... | bash -s -- -y`. Run `bash setup-homeassistant.sh --help` for all options.
 
 Installation takes **15–45 minutes** depending on your phone. The longest step is compiling Home Assistant's Python dependencies (numpy, cryptography, etc.) inside the Ubuntu container.
 
@@ -328,25 +328,13 @@ bash ~/stop-homeassistant.sh
 bash ~/upgrade-homeassistant.sh
 ```
 
-### HACS — the community add-on store
+### Marketplace — the community store
 
-[HACS](https://www.hacs.xyz) is the community store for integrations, themes, and Lovelace cards that aren't in HA core. The setup script offers to install it for you.
+Home Assistant 2026.11 replaced [HACS](https://www.hacs.xyz) with the built-in **Marketplace**. Nothing needs to be installed: open **Settings → Marketplace** in the dashboard. On upgrade, HACS is removed automatically and its installed content and custom repositories migrate to the Marketplace.
 
-> **Install HACS before any other custom integration.** If `custom_components/` already contains hand-installed integrations, remove them first — otherwise HACS can end up in a broken state.
+The setup script no longer installs HACS. `--hacs` / `--no-hacs` are still accepted for compatibility, but they do nothing.
 
-To install it by hand after the fact:
-
-```bash
-proot-distro login ubuntu -- sh -c "cd ~/hass-config && wget -O - https://get.hacs.xyz | bash -"
-```
-
-Then restart Home Assistant and finish setup in the dashboard:
-
-1. **Settings → Devices & Services → + Add Integration**
-2. Search for **HACS**
-3. Tick all the acknowledgements, then authorize with your GitHub account
-
-Full configuration docs: [hacs.xyz/docs/use/configuration/basic](https://www.hacs.xyz/docs/use/configuration/basic/).
+Full documentation: [home-assistant.io/integrations/marketplace](https://www.home-assistant.io/integrations/marketplace/).
 
 ### Upgrading Home Assistant
 

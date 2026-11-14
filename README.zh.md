@@ -266,7 +266,7 @@ Home Assistant Core 运行在手机上的轻量级 Ubuntu 容器中（通过 pro
 curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/setup-homeassistant.sh | bash
 ```
 
-无人值守：`... | bash -s -- --hacs -y`。运行 `bash setup-homeassistant.sh --help` 查看全部选项。
+无人值守：`... | bash -s -- -y`。运行 `bash setup-homeassistant.sh --help` 查看全部选项。
 
 安装耗时 **15–45 分钟**，取决于手机性能。最耗时的步骤是在 Ubuntu 容器中编译 Home Assistant 的 Python 依赖（numpy、cryptography 等）。
 
@@ -283,25 +283,13 @@ bash ~/stop-homeassistant.sh
 bash ~/upgrade-homeassistant.sh
 ```
 
-### HACS — 社区插件商店
+### Marketplace — 社区商店
 
-[HACS](https://www.hacs.xyz) 是社区集成、主题和 Lovelace 卡片的商店，收录了 HA 核心之外的内容。安装脚本会询问是否为你安装。
+Home Assistant 2026.11 用内置的 **Marketplace** 取代了 [HACS](https://www.hacs.xyz)。无需安装任何东西：在仪表盘打开 **设置 → Marketplace** 即可。升级时 HACS 会被自动移除，已安装的内容和自定义仓库会迁移到 Marketplace。
 
-> **请在安装任何其他自定义集成之前先安装 HACS。** 如果 `custom_components/` 中已有手动安装的集成，请先删除它们，否则 HACS 可能会处于损坏状态。
+安装脚本不再安装 HACS。`--hacs` / `--no-hacs` 仍可接受以保持兼容，但不会产生任何效果。
 
-事后手动安装：
-
-```bash
-proot-distro login ubuntu -- sh -c "cd ~/hass-config && wget -O - https://get.hacs.xyz | bash -"
-```
-
-然后重启 Home Assistant，并在仪表盘中完成设置：
-
-1. **设置 → 设备与服务 → + 添加集成**
-2. 搜索 **HACS**
-3. 勾选所有确认项，然后使用 GitHub 账号授权
-
-完整配置文档：[hacs.xyz/docs/use/configuration/basic](https://www.hacs.xyz/docs/use/configuration/basic/)。
+完整文档：[home-assistant.io/integrations/marketplace](https://www.home-assistant.io/integrations/marketplace/)。
 
 ### 升级 Home Assistant
 

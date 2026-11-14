@@ -23,7 +23,6 @@ TERMUX_HOME="${HOME:-/data/data/com.termux/files/home}"
 # ============== CONFIGURATION ==============
 CURRENT_STEP=0
 TOTAL_STEPS=7
-INSTALL_HACS="no"
 
 HACS_FROM_FLAG=""
 ASSUME_YES="no"
@@ -52,10 +51,12 @@ Install Home Assistant Core on Android (Termux + proot-distro Ubuntu).
 Run with no options for the interactive installer.
 
 Options:
-  --hacs        Also install HACS, the community store (default)
-  --no-hacs     Skip HACS
   -y, --yes     Don't ask anything; use the flags above or the defaults
   -h, --help    Show this help
+
+HACS is no longer installed: Home Assistant 2026.11+ ships the built-in
+Marketplace (Settings > Marketplace). The old --hacs / --no-hacs flags are
+still accepted for compatibility but have no effect.
 
 One-line install:
   curl -fsSL https://raw.githubusercontent.com/guicbhz-max/linux-android/main/setup-homeassistant.sh | bash
@@ -361,33 +362,20 @@ preflight_checks() {
 
     echo ""
 
-    # Ask now rather than after a 30-minute install.
-    echo -e "${CYAN}Optional: install HACS (Home Assistant Community Store)?${NC}"
-    echo -e "  ${GRAY}HACS is the add-on store for community integrations and themes.${NC}"
-    echo -e "  ${GRAY}It must be installed BEFORE any other custom integration.${NC}"
-    echo ""
-    if [ -n "$HACS_FROM_FLAG" ]; then
-        INSTALL_HACS="$HACS_FROM_FLAG"
-    else
-        while true; do
-            ask HACS_INPUT "  Install HACS? (y/n) [default: y]: "
-            HACS_INPUT=${HACS_INPUT:-y}
-            case "$HACS_INPUT" in
-                [Yy]*) INSTALL_HACS="yes"; break;;
-                [Nn]*) INSTALL_HACS="no";  break;;
-                *) echo -e "  ${RED}Please enter y or n.${NC}";;
-            esac
-        done
+    # HACS was replaced by the built-in Marketplace in Home Assistant 2026.11
+    # (Settings > Marketplace). There is nothing to install any more, and
+    # HACS is removed automatically when HA upgrades. Keep the flags accepted
+    # so existing automation does not break, but do not install HACS.
+    echo -e "${CYAN}Community store:${NC}"
+    echo -e "  ${GRAY}Home Assistant 2026.11+ ships the built-in Marketplace${NC}"
+    echo -e "  ${GRAY}(Settings > Marketplace). HACS is deprecated and is removed${NC}"
+    echo -e "  ${GRAY}automatically on upgrade, so this script no longer installs it.${NC}"
+    if [ "$HACS_FROM_FLAG" == "yes" ]; then
+        echo -e "  ${YELLOW}⚠${NC}  --hacs ignored: use Settings > Marketplace instead."
     fi
-    if [ "$INSTALL_HACS" == "yes" ]; then
-        echo -e "  ${GREEN}✔ HACS will be installed.${NC}"
-    else
-        echo -e "  ${GRAY}  HACS skipped.${NC}"
-    fi
-    [ "$INSTALL_HACS" == "yes" ] && TOTAL_STEPS=8
 
     echo ""
-    log "Preflight OK: arch=$arch, free=${free_mb}MB, ip=$PHONE_IP, hacs=$INSTALL_HACS"
+    log "Preflight OK: arch=$arch, free=${free_mb}MB, ip=$PHONE_IP, hacs=disabled"
 }
 
 # ============== STEP 1: INSTALL PROOT-DISTRO ==============
@@ -630,60 +618,10 @@ UPGRADEEOF
     echo -e "  ${GREEN}✔ Created ~/upgrade-homeassistant.sh${NC}"
 }
 
-# ============== STEP 7 (OPTIONAL): HACS ==============
-#
-# HACS is the community add-on store. Two things matter, both learned the hard
-# way in issue #2:
-#   1. It must be installed before any other custom integration. If
-#      custom_components already has hand-installed integrations in it, the
-#      HACS installer can leave you with a broken setup.
-#   2. The official installer writes into the HA *config* directory, so it has
-#      to run with that directory as the working directory.
-step_hacs() {
-    update_progress
-    echo -e "${PURPLE}[Step ${CURRENT_STEP}/${TOTAL_STEPS}] Installing HACS...${NC}"
-    echo ""
-
-    local HASS_CONFIG="${TERMUX_HOME}/hass-config"
-
-    if proot-distro login ubuntu -- test -d "${HASS_CONFIG}/custom_components/hacs"; then
-        printf "  ${GRAY}~${NC}  %-55s ${GRAY}(already installed)${NC}\n" "HACS"
-        log "SKIP (already installed): HACS"
-        return 0
-    fi
-
-    # Warn about pre-existing custom integrations rather than silently
-    # stepping on them.
-    local existing
-    existing=$(proot-distro login ubuntu -- sh -c \
-        "ls -1 ${HASS_CONFIG}/custom_components 2>/dev/null | grep -v '^hacs$' | head -5")
-    if [ -n "$existing" ]; then
-        echo -e "  ${YELLOW}⚠${NC}  custom_components already contains:"
-        echo "$existing" | sed 's/^/       /'
-        echo -e "  ${YELLOW}   HACS expects to be installed first. If HACS misbehaves, remove${NC}"
-        echo -e "  ${YELLOW}   those directories and re-run this script.${NC}"
-        log "WARNING: pre-existing custom_components: $existing"
-    fi
-
-    proot_install_pkg "wget" "wget (Ubuntu)"
-
-    (proot-distro login ubuntu -- sh -c \
-        "cd ${HASS_CONFIG} && wget -q -O - https://get.hacs.xyz | bash -" \
-        >> "$LOG_FILE" 2>&1) &
-    spinner $! "Downloading and installing HACS..."
-
-    if proot-distro login ubuntu -- test -d "${HASS_CONFIG}/custom_components/hacs"; then
-        echo -e "  ${GREEN}✔${NC}  HACS installed."
-        echo -e "    ${GRAY}Finish setup in the dashboard: Settings -> Devices & Services${NC}"
-        echo -e "    ${GRAY}-> Add Integration -> HACS (restart HA first).${NC}"
-        log "HACS installed OK"
-    else
-        echo -e "  ${YELLOW}⚠${NC}  HACS install did not complete — see $LOG_FILE."
-        echo -e "    ${GRAY}You can retry manually:${NC}"
-        echo -e "    ${GRAY}proot-distro login ubuntu -- sh -c \"cd ${HASS_CONFIG} && wget -O - https://get.hacs.xyz | bash -\"${NC}"
-        log "WARNING: HACS install incomplete"
-    fi
-}
+# ============== HACS (REMOVED) ==============
+# Home Assistant 2026.11+ replaces HACS with the built-in Marketplace
+# (Settings > Marketplace). HACS is removed automatically on upgrade and its
+# content and custom repositories migrate, so there is no step to run here.
 
 # ============== FINAL STEP: VERIFY INSTALLATION ==============
 step_verify() {
@@ -769,19 +707,17 @@ COMPLETE
     echo -e "  ${CYAN}First launch takes 5–10 minutes to initialize.${NC}"
     echo -e "  ${CYAN}You'll create your admin account in the browser.${NC}"
     echo ""
-    if [ "$INSTALL_HACS" == "yes" ]; then
-        echo -e "${YELLOW}  ─────────────────────────────────────────────────${NC}"
-        echo -e "  ${WHITE}FINISHING HACS SETUP${NC}"
-        echo -e "${YELLOW}  ─────────────────────────────────────────────────${NC}"
-        echo ""
-        echo -e "    1. Restart Home Assistant (stop, then start)"
-        echo -e "    2. Dashboard → Settings → Devices & Services"
-        echo -e "    3. \"+ Add Integration\" → search \"HACS\""
-        echo -e "    4. Tick all the acknowledgements, then authorize with GitHub"
-        echo ""
-        echo -e "    ${GRAY}Docs: https://www.hacs.xyz/docs/use/configuration/basic/${NC}"
-        echo ""
-    fi
+    echo -e "${YELLOW}  ─────────────────────────────────────────────────${NC}"
+    echo -e "  ${WHITE}COMMUNITY STORE (MARKETPLACE)${NC}"
+    echo -e "${YELLOW}  ─────────────────────────────────────────────────${NC}"
+    echo ""
+    echo -e "    Home Assistant 2026.11+ includes the Marketplace."
+    echo -e "    Open it at: ${GREEN}Settings > Marketplace${NC}"
+    echo -e "    HACS is deprecated: on upgrade it is removed automatically and"
+    echo -e "    its content/custom repositories migrate to the Marketplace."
+    echo ""
+    echo -e "    ${GRAY}Docs: https://www.home-assistant.io/integrations/marketplace/${NC}"
+    echo ""
     echo -e "${YELLOW}  ─────────────────────────────────────────────────${NC}"
     echo -e "  ${WHITE}ADDING YOUR SMART DEVICES${NC}"
     echo -e "${YELLOW}  ─────────────────────────────────────────────────${NC}"
@@ -848,7 +784,6 @@ main() {
     step_homeassistant
     step_ha_config
     step_launchers
-    [ "$INSTALL_HACS" == "yes" ] && step_hacs
     step_verify
     show_completion
 
