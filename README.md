@@ -505,6 +505,28 @@ Two separate causes, both fixed in the current script:
 
 If your install predates this fix, GPU acceleration probably still worked — those two failures are loud but not fatal. Re-running the script cleans it up.
 
+**"MESA: error: ZINK: failed to choose pdev" / "failed to load driver zink"**
+Zink needs a Vulkan device. When the configured Turnip/freedreno ICD is missing or cannot load (ROM restriction, version mismatch), Mesa prints those lines and the desktop falls back or fails. Check what the loader actually sees:
+
+```bash
+pkg install vulkan-tools
+vulkaninfo --summary | head -30
+```
+
+If no `freedreno`/Turnip device is listed, force software rendering:
+
+```bash
+cat > ~/.config/linux-gpu.sh <<'EOF'
+export LIBGL_ALWAYS_SOFTWARE=1
+export GALLIUM_DRIVER=llvmpipe
+export MESA_GL_VERSION_OVERRIDE=4.5
+export MESA_GLES_VERSION_OVERRIDE=3.2
+EOF
+bash ~/stop-linux.sh && bash ~/start-linux.sh
+```
+
+`start-linux.sh` also prints these commands on screen automatically when the Vulkan ICD is missing. Re-run `bash ~/termux-linux-setup.sh --de xfce -y` to regenerate `~/.config/linux-gpu.sh` if you want hardware acceleration back.
+
 **Package install fails with "unmet dependencies" or "Conflicts"**
 The script's `safe_install_pkg` function reads each package's declared conflicts, evaluates version constraints properly, and lets apt perform conflicts the package legitimately replaces. If you still see this, check the log and open a GitHub issue with your device model and Android version.
 

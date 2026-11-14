@@ -848,8 +848,25 @@ EOF
     fi
 
     if [ "$GPU_DRIVER" == "freedreno" ]; then
-        echo "export VK_ICD_FILENAMES=${TERMUX_PREFIX}/share/vulkan/icd.d/freedreno_icd.aarch64.json" \
-            >> ~/.config/linux-gpu.sh
+        # Don't hard-code the filename: some package builds ship a differently
+        # named freedreno ICD. Pointing VK_ICD_FILENAMES at a missing file makes
+        # the Vulkan loader find no device at all, and Zink then dies with
+        # "failed to choose pdev" / "failed to load driver zink".
+        local icd_json="${TERMUX_PREFIX}/share/vulkan/icd.d/freedreno_icd.aarch64.json"
+        if [ ! -f "$icd_json" ]; then
+            icd_json=$(ls "${TERMUX_PREFIX}"/share/vulkan/icd.d/*freedreno*.json 2>/dev/null | head -1)
+        fi
+        if [ -n "$icd_json" ] && [ -f "$icd_json" ]; then
+            # VK_DRIVER_FILES is the current variable; VK_ICD_FILENAMES is the
+            # older one every loader still honours. Set both.
+            {
+                echo "export VK_ICD_FILENAMES=${icd_json}"
+                echo "export VK_DRIVER_FILES=${icd_json}"
+            } >> ~/.config/linux-gpu.sh
+        else
+            echo -e "  ${YELLOW}⚠${NC}  Vulkan ICD (freedreno) not found — Zink will fall back to software."
+            log "WARNING: no freedreno ICD json under $TERMUX_PREFIX/share/vulkan/icd.d"
+        fi
     fi
 
     if [ "$DE_CHOICE" == "1" ] || [ "$DE_CHOICE" == "3" ]; then
@@ -970,12 +987,38 @@ while [ ! -S "\$X_TMP/.X11-unix/X0" ] && [ "\$i" -lt 50 ]; do
     i=\$((i + 1))
 done
 export DISPLAY=:0
+x11_failed() {
+    echo ""
+    echo "[!] \$1"
+    echo "    Close the Termux:X11 app completely, then run:"
+    echo "      pkill -9 -f termux.x11; pkill -9 -f xfce4-session; pkill -9 -f xfce4"
+    echo "      rm -f \"\$X_TMP/.X0-lock\" \"\$X_TMP/.X11-unix/X0\" /tmp/.X0-lock /tmp/.X11-unix/X0"
+    echo "      bash ~/start-linux.sh"
+    echo ""
+}
 if command -v xdpyinfo >/dev/null 2>&1; then
-    if ! xdpyinfo >/dev/null 2>&1; then
-        echo "[!] X server not reachable on :0 — close the Termux-X11 app fully and retry."
-    fi
+    xdpyinfo >/dev/null 2>&1 || x11_failed "X server not reachable on :0."
 elif [ ! -S "\$X_TMP/.X11-unix/X0" ]; then
-    echo "[!] Termux-X11 did not start on :0 — close the Termux-X11 app fully and retry."
+    x11_failed "Termux-X11 did not start on :0."
+fi
+
+# Zink needs a working Vulkan device. A missing/!-loadable ICD is the usual
+# cause of "MESA: error: ZINK: failed to choose pdev" and
+# "failed to load driver zink" — leave the fix on screen instead of a dead end.
+if [ -n "\${VK_ICD_FILENAMES:-}" ] && [ ! -f "\$VK_ICD_FILENAMES" ]; then
+    echo ""
+    echo "[!] Vulkan ICD not found: \$VK_ICD_FILENAMES"
+    echo "    Zink cannot start. To use software rendering instead, run:"
+    echo "      printf 'export LIBGL_ALWAYS_SOFTWARE=1\\nexport GALLIUM_DRIVER=llvmpipe\\n' > ~/.config/linux-gpu.sh"
+    echo "      bash ~/stop-linux.sh || true; bash ~/start-linux.sh"
+    echo ""
+elif command -v vulkaninfo >/dev/null 2>&1 && ! vulkaninfo --summary >/dev/null 2>&1; then
+    echo ""
+    echo "[!] Vulkan has no usable device — Zink will fail to choose a pdev."
+    echo "    To use software rendering instead, run:"
+    echo "      printf 'export LIBGL_ALWAYS_SOFTWARE=1\\nexport GALLIUM_DRIVER=llvmpipe\\n' > ~/.config/linux-gpu.sh"
+    echo "      bash ~/stop-linux.sh || true; bash ~/start-linux.sh"
+    echo ""
 fi
 
 # Daemons the bus starts on demand (xfconfd, xfsettingsd, ...) inherit the
